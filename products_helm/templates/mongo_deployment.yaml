@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  labels:
+    app: products
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+      tier: database
+  template:
+    metadata:
+      name: mongodb
+      labels:
+        app: products
+        tier: database
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:4.4.4-bionic
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: {{ .Values.mongodb.db_user }}
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: {{ .Values.mongodb.db_pass }} 
+        ports:
+        - containerPort: 27017

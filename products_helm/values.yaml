@@ -1,0 +1,9 @@
+mongodb:
+  db_host: mongo-svc
+  db_pass: somesecretpass
+  db_user: mongoadmin
+  db_name: products
+
+fastapi:
+  image_repo: psdev21/fastapi
+  image_version: v1.0

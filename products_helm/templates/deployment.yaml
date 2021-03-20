@@ -1,0 +1,45 @@
+{{-  $imageTag := printf "%s:%s" .Values.fastapi.image_repo .Values.fastapi.image_version -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+  labels:
+    app: products
+    tier: restapi
+spec:
+  replicas: 1
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: products
+      tier: restapi
+  template:
+    metadata:
+      name: fastapi
+      labels:
+        app: products
+        tier: restapi
+    spec:
+      containers:
+      - name: fastapi
+        image: {{ $imageTag | quote }} 
+        imagePullPolicy: Always
+        env:
+        - name: DB_HOST
+          value: {{ .Values.mongodb.db_host }}
+        - name: DB_PORT
+          value: '27017'
+        - name: DB_NAME
+          value: {{ .Values.mongodb.db_name }} 
+        - name: DB_USER
+          value: {{ .Values.mongodb.db_user }}
+        - name: DB_PASSWD
+          value: {{ .Values.mongodb.db_pass }} 
+        ports:
+          - containerPort: 8000
