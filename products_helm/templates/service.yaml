@@ -7,10 +7,10 @@ metadata:
     tier: restapi
 spec:
   ports:
-  - nodePort: 32132
-    port: 8000
+  - nodePort: {{ .Values.fastapi.node_port }}
+    port: {{ .Values.fastapi.container_port }}
     protocol: TCP
-    targetPort: 8000
+    targetPort: {{ .Values.fastapi.container_port }}
   selector:
     app: products
     tier: restapi

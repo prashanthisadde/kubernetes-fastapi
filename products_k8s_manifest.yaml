@@ -1,0 +1,151 @@
+# Source: products_api/templates/mongo_service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-svc
+  labels:
+    app: products
+    tier: database
+spec:
+  ports:
+    - port: 27017
+  selector:
+    app: products
+    tier: database
+---
+# Source: products_api/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-svc
+  labels:
+    app: products
+    tier: restapi
+spec:
+  ports:
+  - nodePort: 32132
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: products
+    tier: restapi
+  type: NodePort
+---
+# Source: products_api/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+  labels:
+    app: products
+    tier: restapi
+spec:
+  replicas: 2
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: products
+      tier: restapi
+  template:
+    metadata:
+      name: fastapi
+      labels:
+        app: products
+        tier: restapi
+    spec:
+      containers:
+      - name: fastapi
+        image: "psdev21/fastapi:v1.0" 
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: '0.025'
+          requests:
+            cpu: '0.008'
+        env:
+        - name: DB_HOST
+          value: "mongo-svc"
+        - name: DB_PORT
+          value: "27017"
+        - name: DB_NAME
+          value: "products" 
+        - name: DB_USER
+          value: "mongoadmin"
+        - name: DB_PASSWD
+          value: "somesecretpass" 
+        ports:
+          - containerPort: 8000
+---
+# Source: products_api/templates/mongo_deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  labels:
+    app: products
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+      tier: database
+  template:
+    metadata:
+      name: mongodb
+      labels:
+        app: products
+        tier: database
+    spec:
+      containers:
+      - name: mongodb
+        image: "mongo:4.4.4-bionic" 
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: mongoadmin
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: somesecretpass 
+        ports:
+        - containerPort: 27017
+---
+# Source: products_api/templates/hpa.yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fastapi-hpa
+  labels:
+    app: products
+    feature: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fastapi
+  minReplicas: 2
+  maxReplicas: 4
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 20
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 10  
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80

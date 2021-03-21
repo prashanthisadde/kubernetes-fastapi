@@ -1,3 +1,5 @@
+{{-  $imageTag := printf "%s:%s" .Values.mongodb.image_repo .Values.mongodb.image_version -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,11 +22,11 @@ spec:
     spec:
       containers:
       - name: mongodb
-        image: mongo:4.4.4-bionic
+        image: {{ $imageTag | quote }} 
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           value: {{ .Values.mongodb.db_user }}
         - name: MONGO_INITDB_ROOT_PASSWORD
           value: {{ .Values.mongodb.db_pass }} 
         ports:
-        - containerPort: 27017
+        - containerPort: {{ .Values.mongodb.db_port }}

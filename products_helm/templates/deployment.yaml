@@ -8,7 +8,7 @@ metadata:
     app: products
     tier: restapi
 spec:
-  replicas: 1
+  replicas: {{ .Values.autoscaling.minReplicas }}
   minReadySeconds: 5
   strategy:
     type: RollingUpdate
@@ -29,17 +29,22 @@ spec:
       containers:
       - name: fastapi
         image: {{ $imageTag | quote }} 
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: '0.025'
+          requests:
+            cpu: '0.008'
         env:
         - name: DB_HOST
-          value: {{ .Values.mongodb.db_host }}
+          value: {{ .Values.mongodb.db_host | quote}}
         - name: DB_PORT
-          value: '27017'
+          value: {{ .Values.mongodb.db_port | quote }}
         - name: DB_NAME
-          value: {{ .Values.mongodb.db_name }} 
+          value: {{ .Values.mongodb.db_name | quote }} 
         - name: DB_USER
-          value: {{ .Values.mongodb.db_user }}
+          value: {{ .Values.mongodb.db_user | quote }}
         - name: DB_PASSWD
-          value: {{ .Values.mongodb.db_pass }} 
+          value: {{ .Values.mongodb.db_pass | quote }} 
         ports:
-          - containerPort: 8000
+          - containerPort: {{ .Values.fastapi.container_port }}

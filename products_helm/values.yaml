@@ -3,7 +3,19 @@ mongodb:
   db_pass: somesecretpass
   db_user: mongoadmin
   db_name: products
+  db_port: 27017
+  image_repo: mongo
+  image_version: 4.4.4-bionic
 
 fastapi:
   image_repo: psdev21/fastapi
   image_version: v1.0
+  container_port: 8000
+  node_port: 32132
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 60
