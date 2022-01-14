@@ -1,7 +1,7 @@
 ## Run the application:
 ```bash
-git clone https://github.com/PSsudo/prashanthi_k8s.git
-cd prashanthi_k8s
+git clone https://github.com/pssudo/kubernetes-fastapi.git
+cd kubernetes-fastapi
 ```
 
 ### Deploy using Helm
